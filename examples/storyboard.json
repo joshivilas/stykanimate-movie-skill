@@ -1,0 +1,13 @@
+{
+  "name": "Walk and wave",
+  "fps": 24,
+  "width": 960,
+  "height": 540,
+  "beats": [
+    { "action": "Walk toward a friend with planted stance feet", "seconds": 6 },
+    { "action": "Raise a hand in anticipation", "seconds": 1 },
+    { "action": "Wave with a readable silhouette", "seconds": 1 },
+    { "action": "Lower the hand", "seconds": 1 },
+    { "action": "Hold the ending", "seconds": 1 }
+  ]
+}

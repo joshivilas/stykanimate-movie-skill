@@ -1,0 +1,9 @@
+{
+  "seconds": 10,
+  "sampleRate": 48000,
+  "cues": [
+    { "kind": "noise", "start": 1, "seconds": 0.12, "gain": 0.08, "fade": 0.03 },
+    { "kind": "tone", "start": 7, "seconds": 0.4, "frequency": 660, "gain": 0.12, "fade": 0.08 },
+    { "kind": "tone", "start": 7.4, "seconds": 0.6, "frequency": 880, "gain": 0.1, "fade": 0.12 }
+  ]
+}
