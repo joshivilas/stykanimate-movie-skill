@@ -182,3 +182,54 @@ test('installer copies an independent skill, handles spaces, and refuses replace
   assert.equal(JSON.parse(check.stdout).ready, true);
   assert.throws(() => R.install(path.resolve(__dirname, '..', 'nested')), /outside/);
 }));
+test('quickstart prepares a validated silent demo with exact expectations and no overwrite', () => withTemp(dir => {
+  const run = (...args) => spawnSync(process.execPath, [cli, ...args], { cwd: dir, encoding: 'utf8' });
+  const result = run('quickstart', 'my demo');
+  assert.equal(result.status, 0, result.stderr);
+  const output = JSON.parse(result.stdout);
+  const movie = JSON.parse(fs.readFileSync(output.movie));
+  const expected = JSON.parse(fs.readFileSync(output.expectations));
+  assert.deepEqual(expected, P.expectations(movie));
+  assert.equal(output.frames, 240);
+  assert.equal(output.seconds, 10);
+  assert.equal(expected.video.audioTracks, 0);
+  assert.match(output.next, /no browser or video export was run/);
+  const original = fs.readFileSync(output.movie);
+  assert.equal(run('quickstart', 'my demo').status, 1);
+  assert.deepEqual(fs.readFileSync(output.movie), original);
+  assert.deepEqual(fs.readdirSync(dir), ['my demo']);
+  assert.equal(run('quickstart').status, 0);
+  assert(fs.existsSync(path.join(dir, 'stykanimate-demo', 'movie.json')));
+  const file = path.join(dir, 'existing file');
+  fs.writeFileSync(file, 'keep');
+  assert.equal(run('quickstart', file).status, 1);
+  assert.equal(fs.readFileSync(file, 'utf8'), 'keep');
+  assert.equal(run('quickstart', 'missing parent/child').status, 1);
+  for (const command of ['quickstart', 'setup']) {
+    assert.equal(run(command, '').status, 1);
+    assert.equal(run(command, 'one', 'two').status, 1);
+  }
+}));
+test('setup uses the safe installer and installed quickstart is self-contained', () => withTemp(dir => {
+  const destination = path.join(dir, 'my skills');
+  const run = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8' });
+  const result = run('setup', destination);
+  assert.equal(result.status, 0, result.stderr);
+  const installed = JSON.parse(result.stdout).installed;
+  assert(fs.existsSync(path.join(installed, 'references', 'workflow.md')));
+  assert.equal(run('setup', destination).status, 1);
+  const demo = spawnSync(process.execPath, [path.join(installed, 'scripts', 'styk-tools.cjs'), 'quickstart'], { cwd: dir, encoding: 'utf8' });
+  assert.equal(demo.status, 0, demo.stderr);
+  assert.equal(JSON.parse(demo.stdout).frames, 240);
+}));
+test('setup defaults to the current user Copilot skills directory', t => withTemp(dir => {
+  t.mock.method(os, 'homedir', () => dir);
+  const result = require('../scripts/styk-tools.cjs').main(['setup']);
+  assert.equal(result.installed, path.join(dir, '.copilot', 'skills', 'stykanimate-movie-skill'));
+  assert.throws(() => require('../scripts/styk-tools.cjs').main(['setup']), /already exists/);
+}));
+test('quickstart cleans staging and reports failures without creating a partial demo', t => withTemp(dir => {
+  t.mock.method(P, 'writeJson', () => { throw new Error('test write failure'); });
+  assert.throws(() => require('../scripts/styk-tools.cjs').main(['quickstart', path.join(dir, 'demo')]), /test write failure/);
+  assert.deepEqual(fs.readdirSync(dir), []);
+}));

@@ -6,6 +6,9 @@
   "license": "MIT",
   "engines": { "node": ">=24.0.0" },
   "scripts": {
+    "setup": "node scripts/styk-tools.cjs setup",
+    "demo": "node scripts/styk-tools.cjs quickstart",
+    "tools": "node scripts/styk-tools.cjs",
     "test": "node --test",
     "doctor": "node scripts/styk-tools.cjs doctor",
     "check": "node scripts/release.cjs check"

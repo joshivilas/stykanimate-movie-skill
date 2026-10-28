@@ -29,8 +29,10 @@ npm test
 npm run check
 ```
 
-Follow the [README smoke test](./README.md). Use a temporary output directory,
-validate the demo JSON and WAV, and verify refusal to overwrite.
+Follow the [README local demo](./README.md) using
+`npm run demo -- "<new-temporary-output-directory>"`. Verify refusal to
+overwrite. Separately generate and inspect the example WAV using the
+[production commands](./references/production.md); the quick demo is silent.
 
 ## 3. Complete manual app acceptance
 

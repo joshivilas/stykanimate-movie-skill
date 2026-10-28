@@ -1,130 +1,139 @@
 # StykAnimate movie skill
 
-A reusable agent skill for turning an original story into an animated film at
-[app.stykanimate.com](https://app.stykanimate.com/), with a playable MP4 and an
-editable native STYK project.
+**Describe a story. Let your agent make the film.**
 
-Includes articulated rigs, planted-foot walking, inverse kinematics, pose tracks,
-PNG assets, frame-accurate storyboards, original sound cues, browser-call
-generators, media inspectors, safe installation, and release ZIP packaging.
+Create a short animation at [StykAnimate](https://app.stykanimate.com/) and get
+both a playable **MP4** and an editable **STYK project**.
 
-**Status: v0.1.0 release candidate.** Toolkit tests run locally on Windows.
-Linux/macOS CI is provided but must pass before claiming those platforms are
-verified. Live browser validation is separate from unit tests.
+> Make a 10-second film about a robot finding a flower. Save the editable
+> project and a 1080p MP4.
 
-This is an independent community toolkit, not an official StykAnimate product.
-The website, its software, and its assets are not distributed or licensed here.
+You do not need to write code, prepare JSON, or learn the animation tools.
+The agent handles planning, animation, preview, export, and verification.
 
-## Requirements and supported devices
+## 1. Copy the skill into your project
 
-- Windows, Linux or macOS with **Node.js 24 or newer**.
-- An agent host that supports `SKILL.md` discovery (for example VS Code Copilot).
-- A modern browser and internet access to StykAnimate.
-- For automation: host-provided browser tools capable of executing Playwright
-  snippets against a `page` and accessing selected local files.
-  The toolkit does not install a browser, MCP server, or Playwright.
-- Without those tools: use the [manual recipes](./references/browser-recipes.md).
+1. Download and extract the release ZIP.
+2. Copy the **entire `stykanimate-movie-skill` folder** into your project's
+   `.github/skills` directory. Create that directory if it does not exist.
+3. Reload your agent host if the skill does not appear.
 
-No npm dependencies, Python, ffmpeg, API key, or platform-specific shell helper
-is needed. Node scripts use portable filesystem APIs. Browser tools and Node
-must see the same files; remote/SSH/container hosts need an explicit file transfer
-or browser-local path. Native save dialogs and Downloads folders differ by host.
-
-**Not a promise of every device:** phones/tablets are not standalone authoring
-hosts for this Node toolkit. ARM devices require an available Node 24 runtime,
-compatible agent/browser host, and codec support; they have not been tested here.
-
-## Install
-
-Download a release ZIP, extract it, and open a terminal in the extracted
-`stykanimate-movie-skill` directory. These commands work in PowerShell, Bash and zsh:
+The result should look like this:
 
 ```text
-node --version
-node scripts/styk-tools.cjs doctor
+your-project/
+  .github/
+    skills/
+      stykanimate-movie-skill/
+        SKILL.md
+        scripts/
+        references/
+        examples/
+        ...other bundled files
+```
+
+**No terminal command, npm install, or build step is required.** Do not copy
+only `SKILL.md`: the agent also uses the bundled scripts and references.
+If the skill folder already exists, back it up before replacing it; do not
+blindly merge versions.
+
+For personal Copilot use across projects, copy the folder into `.copilot/skills`
+beneath your home directory instead. Other hosts may use `.agents/skills` or
+`.claude/skills`; use the location supported by your host.
+
+To **make films**, the agent still needs **Node.js 24+** to run the bundled
+helpers and host-provided browser automation tools to operate StykAnimate.
+These are runtime requirements, not installation steps for the skill.
+No npm dependencies, API key, Python, ffmpeg, or separate Playwright
+installation is needed. The skill does not install browser tools.
+
+## 2. Describe your film
+
+Invoke `/stykanimate-movie-skill` in chat, or say:
+
+> Use stykanimate-movie-skill to make a short film about a paper boat helping
+> a lost firefly.
+
+A story idea is enough. Length, style, and sound are optional.
+Unless you specify otherwise, the agent aims for **10-20 seconds, 24 fps,
+landscape 1080p, and no sound**. It asks before discarding unsaved work or
+overwriting your files.
+
+You can also ask for changes:
+
+> Make the ending slower and have the robot wave.
+
+## Optional developer tools
+
+Normal use needs no npm commands. If you prefer a checked installer instead
+of copying the folder, run this from the extracted skill folder:
+
+```text
+npm run setup
+```
+
+It validates the runtime and package, installs into your personal Copilot
+skills directory, and refuses to replace an existing installation. Use
+`npm run setup -- "<skills-directory>"` to choose another destination.
+Quote paths with spaces and use native path separators.
+
+To generate a local demo from the extracted or installed skill folder:
+
+```text
+npm run demo
+```
+
+This creates a new `stykanimate-demo` folder containing validated animation
+JSON and export expectations for a silent 10-second film. It refuses to
+overwrite an existing folder. Use `npm run demo -- "<new-output-directory>"`
+to choose another location whose parent exists.
+
+Then ask your agent:
+
+> Import the generated movie.json into a backed-up StykAnimate page, preview
+> it, save an editable STYK project, export a silent 1080p MP4, and verify
+> both using expected.json.
+
+The local demo does **not** operate the browser or produce a video by itself.
+Generated JSON is not a native STYK project.
+
+If PowerShell blocks `npm.ps1`, use `npm.cmd` instead of `npm` for these
+optional commands. No execution-policy change is needed.
+
+## Limits worth knowing
+
+- Without host browser tools, use the [manual recipes](./references/browser-recipes.md);
+  automatic movie creation is unavailable.
+- Requested sound uses original cues or authorized assets. Audio import is
+  experimental and must be checked by listening to the exported movie.
+  Generating a WAV does not embed it in the film. Dialogue/TTS is not bundled.
+- Camera animation and multilayer authoring require manual editor work.
+- Windows is tested locally. Linux/macOS have portable code and CI configuration,
+  but must pass CI and browser acceptance before being called verified.
+- Phones/tablets are not standalone authoring hosts. ARM compatibility is not
+  verified. Remote/SSH/container hosts need explicit shared file access or transfer.
+- Existing work must be saved before replacement. Never run simultaneous
+  mutating operations on the same editor page.
+
+**Status: v0.1.0 release candidate.** Unit tests do not replace live browser,
+visual, or listening checks. This is an independent community toolkit, not
+an official StykAnimate product; the website and its assets are not bundled.
+
+## Advanced use and contributing
+
+All existing CLI commands remain available:
+
+```text
+npm run tools -- --help
 npm test
-node scripts/release.cjs install "<destination-project>/.github/skills"
+npm run check
 ```
 
-Replace the destination with an actual path, using native path separators.
-Quote paths with spaces. The installer creates `stykanimate-movie-skill` beneath
-the destination and refuses to replace an existing installation.
+- [Agent workflow](./SKILL.md) and [detailed editor workflow](./references/workflow.md)
+- [Tool API and verification](./references/tools.md)
+- [Storyboards, export specs, and sound](./references/production.md)
+- [Publishing](./PUBLISHING.md), [contributing](./CONTRIBUTING.md),
+  [release history](./CHANGELOG.md), and [MIT license](./LICENSE)
 
-For a personal installation instead:
-
-PowerShell:
-
-```powershell
-node .\scripts\release.cjs install (Join-Path $HOME '.copilot\skills')
-```
-
-Bash/zsh on Linux/macOS:
-
-```bash
-node scripts/release.cjs install "$HOME/.copilot/skills"
-```
-
-For other hosts, select their supported skills directory, such as
-`.agents/skills` or `.claude/skills`. Discovery and browser tooling depend on the
-host; no universal MCP/browser adapter is bundled.
-Reload the host and invoke `/stykanimate-movie-skill`, or request:
-
-> Use stykanimate-movie-skill to make a 10-second silent film of a character walking
-> to a friend and waving. Save the editable project and a 1080p MP4.
-
-See [SKILL.md](./SKILL.md) for the complete film workflow.
-
-## First local smoke test
-
-Run from the skill directory. `demo.json`, `plan.json`, `expected.json` and
-`soundtrack.wav` must not already exist.
-
-```text
-node scripts/styk-tools.cjs demo demo.json
-node scripts/styk-tools.cjs validate demo.json
-node scripts/styk-tools.cjs storyboard examples/storyboard.json plan.json
-node scripts/styk-tools.cjs expectations demo.json examples/export-options.json expected.json
-node scripts/styk-tools.cjs audio examples/soundtrack.json soundtrack.wav
-node scripts/styk-tools.cjs inspect-wav soundtrack.wav
-```
-
-Windows users can use backslashes in these relative paths. The demo and sound
-are 10 seconds long. The WAV is optional and is **not** automatically embedded
-in the movie. The export options default to zero audio tracks; set
-`audioTracks: 1` only after adding audio in the app.
-
-Next, have the agent import the demo into a **backed-up** StykAnimate page,
-preview, save STYK, export MP4, and verify with `expected.json`. Generated JSON
-is not native STYK. Browser commands emit tool-call arguments; Node does not
-drive the website by itself.
-
-## What is verified, and what is not
-
-| Surface | Status |
-|---|---|
-| Rigs, IK, dense JSON, timing, file parsing | Automated regression tests |
-| Installation and deterministic ZIP packaging | Automated regression tests |
-| Existing silent import/save/export workflow | Prior browser-validated baseline; UI can change |
-| Scene inspection | Read-only browser helper; live app smoke-tested on Windows |
-| WAV synthesis and PCM16 inspection | Automated regression tests |
-| Audio import helper | Experimental; selectors observed, end-to-end release test required |
-| Audio quality / actual exported sound | Must be listened to; track count alone is insufficient |
-| Linux/macOS | Portable implementation and CI configuration, not locally executed |
-| Camera animation, multilayer authoring, dialogue/TTS | Manual app workflow, not automated here |
-
-Existing work is never intentionally discarded. Read safeguards before using
-replacement import, picker fallbacks, or recovery. Do not run simultaneous
-mutating operations against one editor page.
-
-## Sharing and contributing
-
-- [Publishing checklist and commands](./PUBLISHING.md)
-- [Tool API, browser options and verification](./references/tools.md)
-- [Production helpers and audio](./references/production.md)
-- [Contribution and testing rules](./CONTRIBUTING.md)
-- [Release history](./CHANGELOG.md)
-- [MIT license](./LICENSE)
-
-Only the skill's explicit file allowlist is packaged; workspace movies, sound
-recordings, credentials and previous session files are not included. Inspect
-the archive before publishing. Original user films are not release assets.
+Release packaging uses an explicit allowlist. Your films, recordings,
+credentials, and session files are not included. Inspect archives before sharing.

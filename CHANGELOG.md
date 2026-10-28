@@ -2,6 +2,11 @@
 
 ## 0.1.0 - release candidate
 
+- Simplify the skill to a story-first workflow with optional technical references.
+- Make copying the entire skill folder the default installation path; npm
+  commands are optional developer conveniences, not required setup.
+- Add `npm run setup` for safe personal or project installation and `npm run demo`
+  for a validated silent demo with export expectations; retain all existing CLI commands.
 - Package the existing animation/IK, browser and file-inspection toolkit as a
   self-contained MIT-licensed agent skill.
 - Add portable runtime diagnostics, frame-accurate storyboards, generated output

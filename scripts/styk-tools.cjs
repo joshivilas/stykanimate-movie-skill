@@ -2,12 +2,25 @@
 'use strict';
 
 const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
 const A = require('./animation.cjs');
 const F = require('./formats.cjs');
 const B = require('./browser.cjs');
 const P = require('./production.cjs');
 const help = `StykAnimate toolkit (Node.js 24; no packages required)
 
+Start here (from the skill directory):
+  npm run setup                      Install for your personal Copilot host
+  npm run setup -- <skills-directory> Install in a different skills directory
+  npm run demo -- <new-directory>     Prepare and validate a silent 10-second demo
+  npm run tools -- --help             Show all commands
+
+Equivalent direct commands:
+  node styk-tools.cjs setup [skills-directory]
+  node styk-tools.cjs quickstart [new-directory]
+
+Advanced commands:
   node styk-tools.cjs demo <new-output.json>
   node styk-tools.cjs validate <movie.json>
   node styk-tools.cjs inspect-mp4 <movie.mp4>
@@ -28,11 +41,39 @@ launch a browser. Discover that browser tool, then submit the emitted object.
 Demo refuses to overwrite files. Verification failures exit nonzero.
 Read references/tools.md for option schemas and the authoring API.`;
 
+function quickstart(directory = 'stykanimate-demo') {
+  P.doctor();
+  const target = path.resolve(directory);
+  if (fs.existsSync(target)) throw new Error(`Demo destination already exists: ${target}. Choose a new directory.`);
+  const movie = require('../examples/walk-and-wave.cjs')();
+  const info = A.validateMovie(movie);
+  const expected = P.expectations(movie);
+  const staging = fs.mkdtempSync(path.join(path.dirname(target), '.stykanimate-demo-'));
+  try {
+    A.writeMovie(path.join(staging, 'movie.json'), movie);
+    P.writeJson(path.join(staging, 'expected.json'), expected);
+    fs.renameSync(staging, target);
+  } finally {
+    if (fs.existsSync(staging)) fs.rmSync(staging, { recursive: true });
+  }
+  return {
+    directory: target, ...info,
+    movie: path.join(target, 'movie.json'),
+    expectations: path.join(target, 'expected.json'),
+    next: 'Local demo validated; no browser or video export was run. Ask the agent to import movie.json into a backed-up StykAnimate page, preview, save native STYK, export a silent 1080p MP4, and verify with expected.json.'
+  };
+}
+
 function main(args) {
   const [command, ...rest] = args;
   const read = filename => JSON.parse(fs.readFileSync(filename, 'utf8'));
   const arity = n => { if (rest.length !== n) throw new Error(`Expected ${n} argument(s) for ${command}; run --help`); };
   if (!command || command === '--help') return help;
+  if (command === 'setup' || command === 'quickstart') {
+    if (rest.length > 1 || (rest.length === 1 && !rest[0].trim())) throw new Error(`Expected at most one nonempty directory for ${command}; run --help`);
+    if (command === 'setup') return require('./release.cjs').install(rest[0] ?? path.join(os.homedir(), '.copilot', 'skills'));
+    return quickstart(rest[0]);
+  }
   if (command === 'doctor') { arity(0); return P.doctor(); }
   if (command === 'storyboard') { arity(2); const plan = P.storyboard(read(rest[0])); return { ...P.writeJson(rest[1], plan), frames: plan.frames, seconds: plan.seconds }; }
   if (command === 'expectations') { arity(3); return P.writeJson(rest[2], P.expectations(read(rest[0]), read(rest[1]))); }

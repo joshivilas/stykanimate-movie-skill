@@ -2,6 +2,29 @@
 
 ## Environment and entry point
 
+Install by copying the entire skill folder into your project's `.github/skills`
+directory, then reload the host if needed and describe your film in chat.
+See the [quick start](../README.md) for personal and other host locations.
+No npm command or build step is required.
+
+For an optional checked installer, run `npm run setup` from the extracted
+skill folder for personal Copilot use, or
+`npm run setup -- "<skills-directory>"` for another host or project.
+The installer refuses to replace an existing skill.
+
+`npm run demo` (CLI `quickstart`) checks the runtime and creates a new
+`stykanimate-demo` directory with a validated `movie.json` and `expected.json`.
+Both describe a silent 10-second, 24 fps demo with a 1080p export target.
+Use `npm run demo -- "<new-directory>"` to choose a destination; its parent
+must exist. Existing files or directories are refused. This is a local check,
+not browser automation or a video export. No audio is generated or embedded.
+
+`npm run tools -- <command> ...` is shorthand for
+`node scripts/styk-tools.cjs <command> ...`. The direct CLI also supports
+`setup [skills-directory]` (default: `.copilot/skills` beneath the current
+user's home directory) and `quickstart [new-directory]`.
+All previous commands and argument formats remain supported.
+
 Use Node.js 24, which includes Zstandard support for native STYK inspection.
 No npm packages, Playwright installation, Python, ffmpeg, or local server are
 required. The CLI uses the existing browser tool, not a second browser session.
